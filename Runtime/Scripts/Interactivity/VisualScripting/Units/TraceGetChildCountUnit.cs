@@ -2,7 +2,8 @@ using UnityEngine;
 
 namespace Unity.VisualScripting
 {
-    [UnitCategory("Trace\\Actions")]
+    [IncludeInSettings(true)]
+    [UnitCategory("Trace/Actions")]
     [UnitTitle("Trace: Get Child Count")]
     [TypeIcon(typeof(Transform))]
     public class TraceGetChildCountUnit : Unit

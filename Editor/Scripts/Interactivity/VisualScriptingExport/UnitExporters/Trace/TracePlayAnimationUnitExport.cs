@@ -58,10 +58,17 @@ namespace UnityGLTF.Interactivity.VisualScripting.Export
             node.ValueInConnection[Animation_StartNode.IdValueAnimation].Value = animationId;
             node.ValueIn(Animation_StartNode.IdValueSpeed).MapToInputPort(unit.speed);
 
+            // Store clip name and target in config for trace-viewer export
+            // (trace-viewer uses config strings, not KHR animation indices)
+            string resolvedClipName = clip != null ? clip.name : "";
+            node.Configuration["clip"] = new GltfInteractivityNode.ConfigData { Value = resolvedClipName };
+            node.Configuration["target"] = new GltfInteractivityNode.ConfigData { Value = target.name };
+
             // Resolve loop
             bool isLooping = false;
             if (unitExporter.IsInputLiteralOrDefaultValue(unit.loop, out var loopObj) && loopObj is bool loopVal)
                 isLooping = loopVal;
+            node.Configuration["loop"] = new GltfInteractivityNode.ConfigData { Value = isLooping };
 
             if (!isLooping && clip != null && !clip.isLooping && clip.wrapMode != WrapMode.Loop)
             {

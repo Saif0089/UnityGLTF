@@ -7,7 +7,8 @@ namespace Unity.VisualScripting
     /// Plays an animation clip on the target. Fires 'exit' immediately and 'done' on completion.
     /// Re-triggering while playing cancels the previous done callback.
     /// </summary>
-    [UnitCategory("Trace\\Animation")]
+    [IncludeInSettings(true)]
+    [UnitCategory("Trace/Animation")]
     [UnitTitle("Trace: Play Animation")]
     [TypeIcon(typeof(Animation))]
     public sealed class TracePlayAnimationUnit : Unit, IGraphElementWithData, IGraphEventListener

@@ -6,7 +6,8 @@ namespace Unity.VisualScripting
     /// Plays an external GLB animation on the target. Export-only for trace-viewer;
     /// in Unity runtime, logs a warning and fires exit/done immediately.
     /// </summary>
-    [UnitCategory("Trace\\Animation")]
+    [IncludeInSettings(true)]
+    [UnitCategory("Trace/Animation")]
     [UnitTitle("Trace: Play External Animation")]
     [TypeIcon(typeof(Animation))]
     public class TracePlayExternalUnit : Unit

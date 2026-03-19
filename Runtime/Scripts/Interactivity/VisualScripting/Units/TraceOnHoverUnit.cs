@@ -8,7 +8,8 @@ namespace Unity.VisualScripting
     /// Fires enter/exit when the pointer hovers over the target GameObject.
     /// Requires an EventSystem and PhysicsRaycaster in the scene.
     /// </summary>
-    [UnitCategory("Trace\\Events")]
+    [IncludeInSettings(true)]
+    [UnitCategory("Trace/Events")]
     [UnitTitle("Trace: On Hover")]
     [TypeIcon(typeof(GameObject))]
     public sealed class TraceOnHoverUnit : Unit, IGraphElementWithData, IGraphEventListener

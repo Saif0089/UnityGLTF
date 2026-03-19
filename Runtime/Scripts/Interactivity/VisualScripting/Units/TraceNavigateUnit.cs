@@ -1,6 +1,7 @@
 namespace Unity.VisualScripting
 {
-    [UnitCategory("Trace\\Actions")]
+    [IncludeInSettings(true)]
+    [UnitCategory("Trace/Actions")]
     [UnitTitle("Trace: Navigate")]
     [TypeIcon(typeof(UnityEngine.Application))]
     public class TraceNavigateUnit : Unit

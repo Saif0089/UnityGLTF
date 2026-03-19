@@ -2,7 +2,8 @@ using UnityEngine;
 
 namespace Unity.VisualScripting
 {
-    [UnitCategory("Trace\\Actions")]
+    [IncludeInSettings(true)]
+    [UnitCategory("Trace/Actions")]
     [UnitTitle("Trace: Get Active")]
     [TypeIcon(typeof(GameObject))]
     public class TraceGetActiveUnit : Unit

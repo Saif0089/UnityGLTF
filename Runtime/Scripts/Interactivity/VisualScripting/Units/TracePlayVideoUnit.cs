@@ -6,7 +6,8 @@ namespace Unity.VisualScripting
     /// <summary>
     /// Controls video playback on the target's VideoPlayer component.
     /// </summary>
-    [UnitCategory("Trace\\Actions")]
+    [IncludeInSettings(true)]
+    [UnitCategory("Trace/Actions")]
     [UnitTitle("Trace: Play Video")]
     [TypeIcon(typeof(VideoPlayer))]
     public class TracePlayVideoUnit : Unit

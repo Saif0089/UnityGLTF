@@ -1,0 +1,38 @@
+{
+    "name": "UnityGLTF.Trace.Editor",
+    "rootNamespace": "",
+    "references": [
+        "UnityGLTFEditor",
+        "UnityGLTFScripts",
+        "GLTFSerialization",
+        "UnityGLTF.Trace.Runtime",
+        "UnityGLTF.Interactivity.Runtime",
+        "UnityGLTF.Interactivity.VisualScripting.Runtime",
+        "UnityGLTF.Interactivity.VisualScripting.Export.Editor",
+        "UnityGLTF.Plugins.Experimental",
+        "Unity.VisualScripting.Core",
+        "Unity.VisualScripting.Core.Editor",
+        "Unity.VisualScripting.Flow",
+        "Unity.VisualScripting.Flow.Editor"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "Newtonsoft.Json.dll",
+        "GLTFSerialization.dll"
+    ],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [
+        {
+            "name": "com.unity.visualscripting",
+            "expression": "1.9",
+            "define": "HAVE_VISUAL_SCRIPTING"
+        }
+    ],
+    "noEngineReferences": false
+}

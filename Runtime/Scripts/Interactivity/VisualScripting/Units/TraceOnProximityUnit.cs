@@ -7,7 +7,8 @@ namespace Unity.VisualScripting
     /// Fires enter/exit when the camera crosses a distance threshold to the target.
     /// Checks distance every frame.
     /// </summary>
-    [UnitCategory("Trace\\Events")]
+    [IncludeInSettings(true)]
+    [UnitCategory("Trace/Events")]
     [UnitTitle("Trace: On Proximity")]
     [TypeIcon(typeof(GameObject))]
     public sealed class TraceOnProximityUnit : Unit, IGraphElementWithData, IGraphEventListener
