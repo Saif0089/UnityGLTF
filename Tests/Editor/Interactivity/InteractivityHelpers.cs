@@ -34,7 +34,7 @@ namespace UnityGLTF.Interactivity
                     return $"\"{category?.fullName}\" - \"{title?.title}\" ({x.Name})";
                 })));
         }
-        
+
         [MenuItem("KHR_Interactivity/Log all Units")]
         private static void LogAllVSLNodes()
         {
@@ -42,13 +42,13 @@ namespace UnityGLTF.Interactivity
             tree.filter = UnitOptionFilter.Any;
             tree.Prewarm();
             var root = tree.Root();
-        
+
             foreach (var node in root)
             {
                 Debug.Log(node);
             }
         }
-    
+
         [MenuItem("KHR_Interactivity/Log Units with ValueOutputs of type object")]
         private static void FindAllDynamicValueOutputs()
         {
