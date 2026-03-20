@@ -37,6 +37,16 @@ namespace UnityGLTF.Trace
             typeof(TraceSelectUnit),
             typeof(TraceFloorUnit),
             typeof(TraceRandomUnit),
+            // Templates
+            typeof(TraceToggleVisibilityTemplate),
+            typeof(TraceShowOnStartTemplate),
+            typeof(TraceHideOnStartTemplate),
+            typeof(TraceShowAOrBTemplate),
+            typeof(TraceShowMultipleTemplate),
+            typeof(TraceRandomChildTemplate),
+            typeof(TracePlayVideoTemplate),
+            typeof(TracePlayAnimationTemplate),
+            typeof(TraceAnimationSequenceTemplate),
         };
 
         static TraceNodeRegistration()

@@ -44,6 +44,13 @@ namespace UnityGLTF.Interactivity.VisualScripting
                 return false;
         }
 
+        private static bool IsTraceUnit(IUnit unit)
+        {
+            var typeName = unit.GetType().Name;
+            return typeName.StartsWith("Trace") && (
+                typeName.Contains("Unit") || typeName.Contains("Template"));
+        }
+
         protected override IEnumerable<Warning> Warnings()
         {
             if (!InteractivityPluginEnabled())
@@ -58,7 +65,11 @@ namespace UnityGLTF.Interactivity.VisualScripting
             // TODO for some types we might want to warn if we don't support them altogether
             if (target is Literal || target is This || target is Null)
                 yield break;
-            
+
+            // Trace nodes export via .trace format, not KHR_interactivity — skip warning
+            if (IsTraceUnit(target))
+                yield break;
+
             if (!UnitExporterRegistry.HasUnitExporter(target))
                 yield return Warning.Error("Node will not be exported with KHR_interactivity");
             else
