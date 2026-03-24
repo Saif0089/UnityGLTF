@@ -1,11 +1,12 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace Unity.VisualScripting
 {
     /// <summary>
     /// Plays an animation clip on the target. Fires 'exit' immediately and 'done' on completion.
-    /// Re-triggering while playing cancels the previous done callback.
+    /// Re-triggering while playing always restarts from the beginning.
     /// </summary>
     [IncludeInSettings(true)]
     [UnitCategory("Trace/Animation")]
@@ -16,45 +17,40 @@ namespace Unity.VisualScripting
         public sealed class Data : IGraphElementData
         {
             public bool isListening;
-            public bool running;
+            public bool waitingForDone;
             public int generation;
+            public int framesSincePlay;
+            public string activeClip;
+            public GameObject activeTarget;
             public Delegate updateHandler;
+            // Transform snapshot — captured once on first play, restored on re-trigger
+            public Dictionary<Transform, (Vector3 pos, Quaternion rot, Vector3 scl)> snapshot;
         }
 
-        [DoNotSerialize]
-        [PortLabelHidden]
+        [DoNotSerialize] [PortLabelHidden]
         public ControlInput enter { get; private set; }
 
-        [DoNotSerialize]
-        [PortLabelHidden]
+        [DoNotSerialize] [PortLabelHidden]
         public ControlOutput exit { get; private set; }
 
-        [DoNotSerialize]
-        [PortLabel("Done")]
+        [DoNotSerialize] [PortLabel("Done")]
         public ControlOutput done { get; private set; }
 
-        [DoNotSerialize]
-        [PortLabel("Target")]
-        [PortLabelHidden]
-        [NullMeansSelf]
+        [DoNotSerialize] [PortLabel("Target")] [PortLabelHidden] [NullMeansSelf]
         public ValueInput target { get; private set; }
 
-        [DoNotSerialize]
-        [PortLabel("Clip")]
+        [DoNotSerialize] [PortLabel("Clip")]
         public ValueInput clip { get; private set; }
 
-        [DoNotSerialize]
-        [PortLabel("Speed")]
+        [DoNotSerialize] [PortLabel("Speed")]
         public ValueInput speed { get; private set; }
 
-        [DoNotSerialize]
-        [PortLabel("Loop")]
+        [DoNotSerialize] [PortLabel("Loop")]
         public ValueInput loop { get; private set; }
 
         protected override void Definition()
         {
             enter = ControlInput(nameof(enter), Execute);
-
             exit = ControlOutput(nameof(exit));
             done = ControlOutput(nameof(done));
 
@@ -77,15 +73,12 @@ namespace Unity.VisualScripting
             var anim = go.GetComponent<Animation>();
             if (anim == null)
             {
-                // Try Animator fallback
                 var animator = go.GetComponent<Animator>();
                 if (animator != null)
                 {
-                    var clipName = flow.GetValue<string>(clip);
-                    if (!string.IsNullOrEmpty(clipName))
-                        animator.Play(clipName);
-                    else
-                        animator.Play(0);
+                    var cn = flow.GetValue<string>(clip);
+                    if (!string.IsNullOrEmpty(cn)) animator.Play(cn, 0, 0f);
+                    else animator.Play(0, 0, 0f);
                 }
                 return exit;
             }
@@ -94,39 +87,58 @@ namespace Unity.VisualScripting
             var speedValue = flow.GetValue<float>(speed);
             var loopValue = flow.GetValue<bool>(loop);
 
-            // Invalidate any previous done
+            // Cancel any pending done from a previous play
             data.generation++;
-            var gen = data.generation;
 
-            if (!string.IsNullOrEmpty(clipValue))
+            // Determine which clip to play
+            string clipToPlay = !string.IsNullOrEmpty(clipValue) ? clipValue
+                : (anim.clip != null ? anim.clip.name : null);
+
+            if (clipToPlay != null)
             {
-                anim.Play(clipValue);
-                var state = anim[clipValue];
+                // 1. Stop everything
+                anim.Stop();
+
+                // 2. Snapshot / restore all descendant transforms
+                //    First play: save the initial state of all children
+                //    Re-trigger: restore to that initial state
+                if (data.snapshot == null)
+                {
+                    data.snapshot = new Dictionary<Transform, (Vector3 pos, Quaternion rot, Vector3 scl)>();
+                    foreach (var t in go.GetComponentsInChildren<Transform>())
+                        data.snapshot[t] = (t.localPosition, t.localRotation, t.localScale);
+                }
+                else
+                {
+                    foreach (var kvp in data.snapshot)
+                        if (kvp.Key != null)
+                        {
+                            kvp.Key.localPosition = kvp.Value.pos;
+                            kvp.Key.localRotation = kvp.Value.rot;
+                            kvp.Key.localScale = kvp.Value.scl;
+                        }
+                }
+
+                // 3. Configure and play
+                var state = anim[clipToPlay];
                 if (state != null)
                 {
+                    state.time = 0f;
                     state.speed = speedValue;
                     state.wrapMode = loopValue ? WrapMode.Loop : WrapMode.Once;
                 }
-            }
-            else if (anim.clip != null)
-            {
-                anim.Play();
-                var state = anim[anim.clip.name];
-                if (state != null)
-                {
-                    state.speed = speedValue;
-                    state.wrapMode = loopValue ? WrapMode.Loop : WrapMode.Once;
-                }
+                anim.Play(clipToPlay);
+
+                data.activeClip = clipToPlay;
+                data.activeTarget = go;
+                data.waitingForDone = !loopValue;
+                data.framesSincePlay = 0;
             }
 
-            data.running = !loopValue;
             return exit;
         }
 
-        public IGraphElementData CreateData()
-        {
-            return new Data();
-        }
+        public IGraphElementData CreateData() => new Data();
 
         public void StartListening(GraphStack stack)
         {
@@ -134,11 +146,15 @@ namespace Unity.VisualScripting
             if (data.isListening) return;
 
             var reference = stack.ToReference();
-            Action<EmptyEventArgs> onUpdate = _ => CheckDone(reference);
+            var gen = data.generation;
+            Action<EmptyEventArgs> onUpdate = _ =>
+            {
+                try { CheckDone(reference); }
+                catch (Exception e) { Debug.LogException(e); }
+            };
 
             var hook = new EventHook(EventHooks.Update, stack.machine);
             EventBus.Register(hook, onUpdate);
-
             data.updateHandler = onUpdate;
             data.isListening = true;
         }
@@ -150,34 +166,61 @@ namespace Unity.VisualScripting
 
             var hook = new EventHook(EventHooks.Update, stack.machine);
             EventBus.Unregister(hook, data.updateHandler);
-
             stack.ClearReference();
             data.updateHandler = null;
-            data.running = false;
+            data.waitingForDone = false;
             data.isListening = false;
         }
 
-        public bool IsListening(GraphPointer pointer)
-        {
-            return pointer.GetElementData<Data>(this).isListening;
-        }
+        public bool IsListening(GraphPointer pointer) =>
+            pointer.GetElementData<Data>(this).isListening;
 
         private void CheckDone(GraphReference reference)
         {
+            // Access data without creating a flow first (cheaper, and avoids
+            // issues with flow disposal before done invocation completes)
+            Data data;
+            using (var peek = Flow.New(reference))
+            {
+                data = peek.stack.GetElementData<Data>(this);
+            }
+
+            if (!data.waitingForDone) return;
+
+            // Grace period — Animation.isPlaying is false on the frame Play() is called
+            data.framesSincePlay++;
+            if (data.framesSincePlay < 3) return;
+
+            // Check if the animation finished
+            if (data.activeTarget == null)
+            {
+                data.waitingForDone = false;
+                return;
+            }
+
+            var anim = data.activeTarget.GetComponent<Animation>();
+            if (anim == null)
+            {
+                data.waitingForDone = false;
+                return;
+            }
+
+            // Still playing — wait
+            if (anim.IsPlaying(data.activeClip)) return;
+
+            // Animation finished — fire done
+            var gen = data.generation;
+            data.waitingForDone = false;
+
+            // Create a NEW flow specifically for the done invocation
+            // so it can properly chain to the next node in the sequence
             using (var flow = Flow.New(reference))
             {
-                var data = flow.stack.GetElementData<Data>(this);
-                if (!data.running) return;
+                // Double-check generation hasn't changed (re-trigger during our check)
+                var freshData = flow.stack.GetElementData<Data>(this);
+                if (freshData.generation != gen) return;
 
-                var go = flow.GetValue<GameObject>(target);
-                if (go == null) { data.running = false; return; }
-
-                var anim = go.GetComponent<Animation>();
-                if (anim == null || !anim.isPlaying)
-                {
-                    data.running = false;
-                    flow.Invoke(done);
-                }
+                flow.Invoke(done);
             }
         }
     }
