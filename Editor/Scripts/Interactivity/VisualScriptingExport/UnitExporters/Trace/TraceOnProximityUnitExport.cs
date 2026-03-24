@@ -27,8 +27,8 @@ namespace UnityGLTF.Interactivity.VisualScripting.Export
             if (target != null)
                 node.Configuration[Trace_OnProximityNode.IdConfigTarget].Value = target.name;
 
-            if (unitExporter.IsInputLiteralOrDefaultValue(unit.threshold, out var thresholdObj) && thresholdObj is float thresholdVal)
-                node.Configuration[Trace_OnProximityNode.IdConfigDistance].Value = thresholdVal;
+            // threshold is now a data input, not a config
+            node.ValueIn(Trace_OnProximityNode.IdValueThreshold).MapToInputPort(unit.threshold);
 
             node.FlowOut(Trace_OnProximityNode.IdFlowEnter).MapToControlOutput(unit.enter);
             node.FlowOut(Trace_OnProximityNode.IdFlowExit).MapToControlOutput(unit.exit);

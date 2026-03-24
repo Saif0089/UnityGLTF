@@ -119,65 +119,6 @@ namespace UnityGLTF.Trace
         }
 
         /// <summary>
-        /// Serialize animation/start in trace-viewer format:
-        /// Config: clip (string), target (string), loop (bool)
-        /// Values: speed (float) only
-        /// Strips: animation (int index), startTime, endTime
-        /// </summary>
-        private static JObject SerializeAnimationStartNode(
-            GltfInteractivityNode node,
-            Dictionary<int, int> indexMap,
-            HashSet<int> unsupportedIndices)
-        {
-            // Build config from stored metadata
-            var config = new JObject();
-            foreach (var kvp in node.Configuration)
-            {
-                if (kvp.Value.Value != null)
-                {
-                    var configObj = new JObject();
-                    GltfInteractivityNode.ValueSerializer.Serialize(kvp.Value.Value, configObj);
-                    config.Add(kvp.Key, configObj);
-                }
-            }
-
-            // Only keep speed from value inputs (strip animation, startTime, endTime)
-            var values = new JObject();
-            if (node.ValueInConnection.TryGetValue("speed", out var speedData))
-            {
-                values.Add("speed", SerializeValueSocket(speedData, indexMap, unsupportedIndices));
-            }
-
-            // Remap flow connections
-            var flows = new JObject();
-            foreach (var flow in node.FlowConnections)
-            {
-                if (flow.Value.Node != null && flow.Value.Node.HasValue)
-                {
-                    var targetIdx = flow.Value.Node.Value;
-                    if (!unsupportedIndices.Contains(targetIdx) && indexMap.ContainsKey(targetIdx))
-                    {
-                        flows.Add(flow.Key, new JObject
-                        {
-                            new JProperty("node", indexMap[targetIdx]),
-                            new JProperty("socket", flow.Value.Socket),
-                        });
-                    }
-                }
-            }
-
-            var result = new JObject
-            {
-                new JProperty("declaration", node.OpDeclaration),
-            };
-            if (config.Count > 0) result.Add("configuration", config);
-            if (values.Count > 0) result.Add("values", values);
-            if (flows.Count > 0) result.Add("flows", flows);
-
-            return result;
-        }
-
-        /// <summary>
         /// Default node serialization with index remapping and unsupported-node filtering.
         /// </summary>
         private static JObject SerializeNode(

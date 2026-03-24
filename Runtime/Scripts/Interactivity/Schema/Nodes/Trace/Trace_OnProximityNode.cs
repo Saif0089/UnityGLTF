@@ -7,14 +7,14 @@ namespace UnityGLTF.Interactivity.Schema
         [ConfigDescription]
         public const string IdConfigTarget = "target";
 
-        [ConfigDescription]
-        public const string IdConfigDistance = "distance";
-
         [FlowOutSocketDescription]
         public const string IdFlowEnter = "enter";
 
         [FlowOutSocketDescription]
         public const string IdFlowExit = "exit";
+
+        [InputSocketDescription(GltfTypes.Float)]
+        public const string IdValueThreshold = "threshold";
 
         [OutputSocketDescription(GltfTypes.Float)]
         public const string IdValueDistance = "distance";
