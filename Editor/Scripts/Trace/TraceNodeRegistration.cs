@@ -37,6 +37,19 @@ namespace UnityGLTF.Trace
             typeof(TraceSelectUnit),
             typeof(TraceFloorUnit),
             typeof(TraceRandomUnit),
+            typeof(TraceMultiplyUnit),
+            typeof(TraceDivideUnit),
+            typeof(TraceGreaterEqualUnit),
+            typeof(TraceLessThanUnit),
+            typeof(TraceCombine3Unit),
+            // Property ops
+            typeof(TraceGetPropertyUnit),
+            typeof(TraceSetPropertyUnit),
+            // Pages ops
+            typeof(TracePagesNextUnit),
+            typeof(TracePagesPrevUnit),
+            typeof(TracePagesGetActiveIndexUnit),
+            typeof(TracePagesGetPageCountUnit),
             // Templates
             typeof(TraceToggleVisibilityTemplate),
             typeof(TraceShowOnStartTemplate),

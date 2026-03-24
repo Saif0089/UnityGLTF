@@ -19,9 +19,12 @@ namespace UnityGLTF.Interactivity.VisualScripting.Export
         {
             var unit = unitExporter.unit as TraceOnHoverUnit;
 
-            var node = unitExporter.CreateNode<Trace_OnHoverNode>();
-            node.FlowOut(Trace_OnHoverNode.IdFlowEnter).MapToControlOutput(unit.enter);
-            node.FlowOut(Trace_OnHoverNode.IdFlowExit).MapToControlOutput(unit.exit);
+            // trace-viewer uses two separate ops: event/onHoverIn and event/onHoverOut
+            var inNode = unitExporter.CreateNode<Trace_OnHoverInNode>();
+            inNode.FlowOut(Trace_OnHoverInNode.IdFlowOut).MapToControlOutput(unit.enter);
+
+            var outNode = unitExporter.CreateNode<Trace_OnHoverOutNode>();
+            outNode.FlowOut(Trace_OnHoverOutNode.IdFlowOut).MapToControlOutput(unit.exit);
 
             return true;
         }

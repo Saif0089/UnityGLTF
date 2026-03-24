@@ -1,20 +1,14 @@
 namespace UnityGLTF.Interactivity.Schema
 {
-    public class Trace_PlayExternalNode : GltfInteractivityNodeSchema
+    public class Trace_PlayAnimationNode : GltfInteractivityNodeSchema
     {
-        public override string Op { get; set; } = "trace/playAnimationExternal";
+        public override string Op { get; set; } = "trace/playAnimation";
 
         [ConfigDescription]
         public const string IdConfigTarget = "target";
 
         [ConfigDescription]
-        public const string IdConfigSrc = "src";
-
-        [ConfigDescription]
         public const string IdConfigClip = "clip";
-
-        [ConfigDescription]
-        public const string IdConfigLoop = "loop";
 
         [FlowInSocketDescription]
         public const string IdFlowIn = "in";
@@ -27,5 +21,8 @@ namespace UnityGLTF.Interactivity.Schema
 
         [InputSocketDescription(GltfTypes.Float)]
         public const string IdValueSpeed = "speed";
+
+        [InputSocketDescription(GltfTypes.Bool)]
+        public const string IdValueLoop = "loop";
     }
 }

@@ -37,12 +37,23 @@ namespace UnityGLTF.Trace.Components
                 transform.GetChild(i).gameObject.SetActive(i == index);
         }
 
+        public int CurrentPage => _currentPage;
+        public int PageCount => transform.childCount;
+
         public void NextPage()
         {
             var next = _currentPage + 1;
             if (next >= transform.childCount)
                 next = autoloop ? 0 : transform.childCount - 1;
             ShowPage(next);
+        }
+
+        public void PrevPage()
+        {
+            var prev = _currentPage - 1;
+            if (prev < 0)
+                prev = autoloop ? transform.childCount - 1 : 0;
+            ShowPage(prev);
         }
     }
 }

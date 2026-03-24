@@ -18,10 +18,13 @@ namespace UnityGLTF.Trace
     public static class TraceGraphDataSerializer
     {
         // Ops that trace-viewer's GraphCompiler does NOT support
+        // (pointer/* is KHR-only; not needed now that animation uses trace/playAnimation directly)
         private static readonly HashSet<string> UnsupportedOps = new HashSet<string>
         {
             "pointer/get", "pointer/set", "pointer/interpolate",
         };
+        // NOTE: These are kept as a safety net. The animation exporter no longer
+        // creates pointer/get nodes, but other KHR exporters might.
 
         public static JObject Serialize(
             GltfInteractivityNode[] nodes,
@@ -64,11 +67,7 @@ namespace UnityGLTF.Trace
                 var node = nodes[i];
                 var op = opByDecl.TryGetValue(node.OpDeclaration, out var o) ? o : "";
 
-                JObject serialized;
-                if (op == "animation/start")
-                    serialized = SerializeAnimationStartNode(node, indexMap, unsupportedIndices);
-                else
-                    serialized = SerializeNode(node, indexMap, unsupportedIndices);
+                JObject serialized = SerializeNode(node, indexMap, unsupportedIndices);
 
                 serializedNodes.Add(serialized);
             }

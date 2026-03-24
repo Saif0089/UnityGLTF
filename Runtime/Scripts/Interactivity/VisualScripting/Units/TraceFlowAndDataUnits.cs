@@ -320,6 +320,104 @@ namespace Unity.VisualScripting
 
     [IncludeInSettings(true)]
     [UnitCategory("Trace/Math")]
+    [UnitTitle("Trace: Multiply")]
+    public sealed class TraceMultiplyUnit : Unit
+    {
+        [DoNotSerialize] public ValueInput a { get; private set; }
+        [DoNotSerialize] public ValueInput b { get; private set; }
+        [DoNotSerialize] [PortLabel("Value")] public ValueOutput value { get; private set; }
+        protected override void Definition()
+        {
+            a = ValueInput<float>(nameof(a), 0);
+            b = ValueInput<float>(nameof(b), 0);
+            value = ValueOutput<float>(nameof(value), flow => flow.GetValue<float>(a) * flow.GetValue<float>(b));
+            Requirement(a, value);
+            Requirement(b, value);
+        }
+    }
+
+    [IncludeInSettings(true)]
+    [UnitCategory("Trace/Math")]
+    [UnitTitle("Trace: Divide")]
+    public sealed class TraceDivideUnit : Unit
+    {
+        [DoNotSerialize] public ValueInput a { get; private set; }
+        [DoNotSerialize] public ValueInput b { get; private set; }
+        [DoNotSerialize] [PortLabel("Value")] public ValueOutput value { get; private set; }
+        protected override void Definition()
+        {
+            a = ValueInput<float>(nameof(a), 0);
+            b = ValueInput<float>(nameof(b), 1);
+            value = ValueOutput<float>(nameof(value), flow =>
+            {
+                var bv = flow.GetValue<float>(b);
+                return bv != 0 ? flow.GetValue<float>(a) / bv : 0;
+            });
+            Requirement(a, value);
+            Requirement(b, value);
+        }
+    }
+
+    [IncludeInSettings(true)]
+    [UnitCategory("Trace/Math")]
+    [UnitTitle("Trace: Greater Equal")]
+    public sealed class TraceGreaterEqualUnit : Unit
+    {
+        [DoNotSerialize] public ValueInput a { get; private set; }
+        [DoNotSerialize] public ValueInput b { get; private set; }
+        [DoNotSerialize] [PortLabel("Value")] public ValueOutput value { get; private set; }
+        protected override void Definition()
+        {
+            a = ValueInput<float>(nameof(a), 0);
+            b = ValueInput<float>(nameof(b), 0);
+            value = ValueOutput<bool>(nameof(value), flow => flow.GetValue<float>(a) >= flow.GetValue<float>(b));
+            Requirement(a, value);
+            Requirement(b, value);
+        }
+    }
+
+    [IncludeInSettings(true)]
+    [UnitCategory("Trace/Math")]
+    [UnitTitle("Trace: Less Than")]
+    public sealed class TraceLessThanUnit : Unit
+    {
+        [DoNotSerialize] public ValueInput a { get; private set; }
+        [DoNotSerialize] public ValueInput b { get; private set; }
+        [DoNotSerialize] [PortLabel("Value")] public ValueOutput value { get; private set; }
+        protected override void Definition()
+        {
+            a = ValueInput<float>(nameof(a), 0);
+            b = ValueInput<float>(nameof(b), 0);
+            value = ValueOutput<bool>(nameof(value), flow => flow.GetValue<float>(a) < flow.GetValue<float>(b));
+            Requirement(a, value);
+            Requirement(b, value);
+        }
+    }
+
+    [IncludeInSettings(true)]
+    [UnitCategory("Trace/Math")]
+    [UnitTitle("Trace: Combine3")]
+    public sealed class TraceCombine3Unit : Unit
+    {
+        [DoNotSerialize] [PortLabel("X")] public ValueInput x { get; private set; }
+        [DoNotSerialize] [PortLabel("Y")] public ValueInput y { get; private set; }
+        [DoNotSerialize] [PortLabel("Z")] public ValueInput z { get; private set; }
+        [DoNotSerialize] [PortLabel("Value")] public ValueOutput value { get; private set; }
+        protected override void Definition()
+        {
+            x = ValueInput<float>(nameof(x), 0);
+            y = ValueInput<float>(nameof(y), 0);
+            z = ValueInput<float>(nameof(z), 0);
+            value = ValueOutput<Vector3>(nameof(value), flow =>
+                new Vector3(flow.GetValue<float>(x), flow.GetValue<float>(y), flow.GetValue<float>(z)));
+            Requirement(x, value);
+            Requirement(y, value);
+            Requirement(z, value);
+        }
+    }
+
+    [IncludeInSettings(true)]
+    [UnitCategory("Trace/Math")]
     [UnitTitle("Trace: Floor")]
     public sealed class TraceFloorUnit : Unit
     {
