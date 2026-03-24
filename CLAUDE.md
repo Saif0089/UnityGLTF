@@ -51,6 +51,16 @@ Each behavior graph operation has three parts:
 
 The `TraceGraphDataSerializer` strips unsupported ops (`pointer/get`), remaps node indices, and outputs trace-viewer's flat format (`{types, declarations, variables, events, nodes}`).
 
+### Animation Playback
+
+`TracePlayAnimationUnit` snapshots all descendant transforms on first play and restores them on re-trigger. This is necessary because Unity's legacy `Animation` component leaves objects in their end state after `WrapMode.Once` completes (e.g. scale→0), and `anim.Sample()`/`anim.Rewind()` don't reliably reset child object transforms. The snapshot approach guarantees correct reset regardless of clip structure.
+
+The `done` flow output fires when a non-looping clip finishes (checked via `anim.IsPlaying(clipName)` with a 3-frame grace period after `Play()` since Unity reports `isPlaying=false` on the same frame). A generation counter prevents stale callbacks from firing on re-trigger.
+
+### Hover Export Split
+
+`TraceOnHoverUnit` is a single VS node with `enter`/`exit` flow outputs (better UX). The exporter (`TraceOnHoverUnitExport`) emits TWO separate schema nodes (`event/onHoverIn` + `event/onHoverOut`) to match trace-viewer's format.
+
 ### Node Registration
 
 New VS units must be registered in `TraceNodeRegistration.cs` which programmatically adds types to `BoltCore.Configuration.typeOptions` on domain reload. Without this, nodes won't appear in the Script Graph fuzzy finder. After adding new units, users must run **Tools → Trace → Force Register All Trace Nodes** then **Regenerate Nodes**.
@@ -80,4 +90,7 @@ Run via Unity: **Window → General → Test Runner** or CLI: `unity -runTests -
 - VS unit categories use forward slashes: `[UnitCategory("Trace/Events")]` not `"Trace\\Events"`
 - Event units extending `EventUnit<T>` inherit `[SpecialUnit]` which hides them from category browsing — use plain `Unit` + `IGraphEventListener` instead
 - The `InteractivityUnitAnalyzer` warns on nodes without KHR exporters — Trace nodes are exempted via `IsTraceUnit()` check
+- VS units cannot reference `UnityGLTF.Trace.Runtime` types — use `GetComponent("TypeName")` by string + reflection, or `SendMessage("MethodName")` for actions
 - Do not include Co-Authored-By lines in git commits
+- All new VS units must be added to `TraceNodeRegistration.cs` type array AND have `[IncludeInSettings(true)]` attribute
+- Animation clips that modify transforms (scale, position) must have keyframes at frame 0 with initial values for proper reset behavior
